@@ -1,0 +1,13 @@
+{
+   "Statement": [
+      {
+         "Sid": "USERID",
+         "Effect": "Allow",
+         "Principal": {
+            "AWS": "USERID"
+         },
+         "Action": "s3:ListBucket",
+         "Resource": "arn:aws:s3:::BUCKET"
+      }
+   ]
+}
