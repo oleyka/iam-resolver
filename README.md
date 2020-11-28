@@ -9,6 +9,22 @@ Usage
 ---
 
 ```
+$ python3 iam_resolver.py --help
+usage: iam_resolver.py [-h] -b BUCKET [-i INPUT] [--drop-policy]
+
+IAM identifier resolver.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -b BUCKET, --bucket BUCKET
+                        name of the bucket to use for identifier resolution
+  -i INPUT, --input INPUT
+                        file with IAM identifiers to resolve
+  --drop-policy         drop current bucket policy prior to testing
+```
+
+There is also simple version in `bash`:
+```
 ./resolver.sh -b <BUCKET_NAME> -i <INPUT_FILE>
 ```
 
