@@ -115,12 +115,16 @@ def get_ids(fname, resolve_accounts):
         lines = file.read().splitlines()
 
     noquote_lines = [line.replace("\"", "").replace("'", "") for line in lines]
-    valid_aids = [aid for aid in noquote_lines if validate_id(aid, resolve_accounts)]
-    for aid in noquote_lines:
+    unique_lines = []
+    [unique_lines.append(aid) for aid in noquote_lines if aid not in unique_lines]
+
+    valid_aids = [aid for aid in unique_lines if validate_id(aid, resolve_accounts)]
+    for aid in unique_lines:
         if not aid in valid_aids:
             if ',' in aid:
                 aid = "\""+aid+"\""
             print(aid, "SKIPPED", sep=",")
+
     return valid_aids
 
 
