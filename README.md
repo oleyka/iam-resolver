@@ -17,14 +17,18 @@ Usage
 
 ```
 $ python3 iam_resolver.py --help
-usage: iam_resolver.py [-h] -b BUCKET [-i INPUT] [--drop-policy]
+usage: iam_resolver.py [-h] -b BUCKET [-c int[3, 20]] [-i INPUT]
+                       [--drop-policy] [--resolve-accounts]
 
-IAM identifier resolver.
+AWS identifier resolver.
 
 optional arguments:
   -h, --help            show this help message and exit
   -b BUCKET, --bucket BUCKET
-                        name of the bucket to use for identifier resolution
+                        name of an existing bucket to use for identifier
+                        resolution
+  -c int[3, 20], --count int[3, 20]
+                        count of IAM identifiers in a batch (default=10)
   -i INPUT, --input INPUT
                         file with IAM identifiers to resolve
   --drop-policy         drop current bucket policy prior to testing

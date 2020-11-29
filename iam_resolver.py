@@ -16,6 +16,10 @@ def parse_args():
     parser.add_argument('-b', '--bucket', dest='bucket', required=True,
                         help='name of an existing bucket to use for identifier resolution'
                        )
+    parser.add_argument('-c', '--count', dest='batch_size', type=int, default=10,
+                        choices=list(range(3, 21)), metavar='int[3, 20]',
+                        help='count of IAM identifiers in a batch (default=10)'
+                       )
     parser.add_argument('-i', '--input', dest='input', default='input.txt',
                         help='file with IAM identifiers to resolve'
                        )
@@ -120,8 +124,8 @@ def get_ids(fname, resolve_accounts):
     return valid_aids
 
 
-def resolve_aids(client, bucket, src_policy, test_aids):
-    """ Resolve all ids at once """
+def resolve_batch(client, bucket, src_policy, test_aids):
+    """ Resolve a batch of ids """
     if DEBUG:
         print("--", "Attempting to resolve ids", test_aids)
     test_policy = build_policy(bucket, src_policy, test_aids)
@@ -143,10 +147,22 @@ def resolve_aids(client, bucket, src_policy, test_aids):
             if DEBUG:
                 print("--", "Bulk policy upload for", test_aids, "did not succeed")
             for aid in test_aids:
-                resolve_aids(client, bucket, src_policy, [aid])
+                resolve_batch(client, bucket, src_policy, [aid])
         else:
             print(test_aids[0], 'UNRESOLVED', sep=",")
     return True
+
+
+def resolve_aids(client, bucket, src_policy, test_aids, batch_size):
+    """ Resolve all """
+    # pylint: disable=invalid-name
+
+    n = batch_size
+    batches = [
+        test_aids[i * n:(i + 1) * n] for i in range((len(test_aids) + n - 1) // n )
+    ]
+    for batch in batches:
+        resolve_batch(client, bucket, src_policy, batch)
 
 
 def main():
@@ -159,7 +175,7 @@ def main():
     if not main_args.drop_policy:
         saved_policy = get_policy(s3_client, main_args.bucket)
 
-    resolve_aids(s3_client, main_args.bucket, saved_policy, aids)
+    resolve_aids(s3_client, main_args.bucket, saved_policy, aids, main_args.batch_size)
 
     if saved_policy and not main_args.drop_policy:
         if DEBUG:
