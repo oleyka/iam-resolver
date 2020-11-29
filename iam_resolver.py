@@ -12,7 +12,7 @@ DEBUG = False
 
 def parse_args():
     """ Parse the args """
-    parser = argparse.ArgumentParser(description='IAM identifier resolver.')
+    parser = argparse.ArgumentParser(description='AWS identifier resolver.')
     parser.add_argument('-b', '--bucket', dest='bucket', required=True,
                         help='name of an existing bucket to use for identifier resolution'
                        )
@@ -21,6 +21,9 @@ def parse_args():
                        )
     parser.add_argument('--drop-policy', dest='drop_policy', action='store_true',
                         help='drop current bucket policy prior to testing'
+                       )
+    parser.add_argument('--resolve-accounts', dest='resolve_accounts', action='store_true',
+                        help='resolve account IDs as well'
                        )
 
     args = parser.parse_args()
@@ -82,24 +85,33 @@ def get_policy(client, bucket):
     return policy
 
 
-def validate_id(aid):
+def validate_id(aid, resolve_accounts):
     """ Verify a string is of a valid AWS id format """
     base32chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"
-    if aid[0:4] not in ["AROA", "AIDA"]:
-        return False
-    for sym in aid[4:]:
-        if sym not in base32chars:
+    digits = "0123456789"
+
+    if resolve_accounts and len(aid) == 12:
+        for sym in aid:
+            if sym not in digits:
+                return False
+        return True
+    if len(aid) == 21:
+        if aid[0:4] not in ["AROA", "AIDA"]:
             return False
-    return True
+        for sym in aid[4:]:
+            if sym not in base32chars:
+                return False
+        return True
+    return False
 
 
-def get_ids(fname):
+def get_ids(fname, resolve_accounts):
     """ Read the list of ids to resolve """
     with open(fname) as file:
         lines = file.read().splitlines()
 
     noquote_lines = [line.replace("\"", "").replace("'", "") for line in lines]
-    valid_aids = [aid for aid in noquote_lines if validate_id(aid)]
+    valid_aids = [aid for aid in noquote_lines if validate_id(aid, resolve_accounts)]
     for aid in noquote_lines:
         if not aid in valid_aids:
             if ',' in aid:
@@ -140,7 +152,7 @@ def resolve_aids(client, bucket, src_policy, test_aids):
 def main():
     """ Main """
     main_args = parse_args()
-    aids = get_ids(main_args.input)
+    aids = get_ids(main_args.input, main_args.resolve_accounts)
 
     saved_policy = ""
     s3_client = boto3.resource('s3')
