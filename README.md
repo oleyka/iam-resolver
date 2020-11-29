@@ -35,7 +35,7 @@ optional arguments:
   --resolve-accounts    resolve account IDs as well
 ```
 
-There is also a simpler version written in `bash`. The original S3 bucket policy would be destroyed. Here's hot to run it:
+There is also a rudimentary version written in `bash`. The original S3 bucket policy would be destroyed. Here's how to run it:
 ```
 $ ./resolver.sh -b <BUCKET_NAME> -i <INPUT_FILE>
 ```
